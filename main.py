@@ -1,21 +1,9 @@
-import discord
+import discord,asyncio, time, string, random, datetime, os, re, threading, chardet, sys
 from discord.ext.commands import Bot
 from discord.ext import commands
-import asyncio
-import time
-import string
-import random
-import datetime
 from threading import Timer
-import os
-import re
-import time
-import sys
-import time
-global total
-import threading
-import chardet
 from threading import Thread
+global total
 total = 0
 
 Client = discord.Client()
