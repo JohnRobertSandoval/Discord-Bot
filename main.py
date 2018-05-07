@@ -1,4 +1,5 @@
-import discord,asyncio, time, string, random, datetime, os, re, threading, chardet, sys
+# -*- encoding: utf-8 -*-
+import discord,asyncio, time, string, random, datetime, os, re, threading, chardet, sys, emoji
 from discord.ext.commands import Bot
 from discord.ext import commands
 from threading import Timer
@@ -9,8 +10,17 @@ total = 0
 Client = discord.Client()
 client = commands.Bot(command_prefix = "?")
 
+def char_is_emoji(character):
+    return character in emoji.UNICODE_EMOJI
 
-    
+
+def text_has_emoji(text):
+    for character in text:
+        if character in emoji.UNICODE_EMOJI:
+            return True
+    return False
+
+
 
 @client.event
 async def on_ready():
@@ -60,24 +70,30 @@ async def on_message_edit(before, after):
             pass
         
     postedMessage = postedMessage.replace('@', "a")
-
+    postedMessage = postedMessage.replace("l", "i")
+    postedMessage = postedMessage.replace("L", "i")
+    emojiIn = text_has_emoji(postedMessage)
+    if emojiIn == True:
+        for symbol in postedMessage:
+            if symbol in emoji.UNICODE_EMOJI:
+                postedMessage = postedMessage.replace(symbol, "")
+        
+    
     non = isEnglish(postedMessage)
     if non == False:
-        if message.author.id != "441029094247759872":
-            if message.author.id != "375173223526170625":
-                if message.author.id != "440947329101725696":
-                    await client.send_message(message.channel, test+": Please only speak english in the chat. Non-Ascii Characters are not allowed.")
+        if not message.author.server_permissions.administrator:
+            await client.delete_message(message)
+            await client.send_message(message.channel, test+": Please only speak english in the chat. Non-Ascii Characters are not allowed.")
+
 
     if str(message.author.id) not in open("muted.txt", "r").read():
         with open("blacklist.txt", mode='r') as blacklist:
             for word in blacklist:
                 word= word.rstrip()
-                if message.author.id != "441029094247759872":
-                    if message.author.id != "375173223526170625":
-                        if message.author.id != "440947329101725696":
-                            if word in postedMessage:
-                                await client.delete_message(message)
-                                await client.send_message(message.channel, test+": Please do not speak of this in the chat, take some time to review discords terms of service. https://discordapp.com/terms")
+                if not message.author.server_permissions.administrator:
+                    if word in postedMessage:
+                        await client.delete_message(message)
+                        await client.send_message(message.channel, test+": Please do not speak of this in the chat, take some time to review discords terms of service. https://discordapp.com/terms")
 
 def isEnglish(s):
     try:
@@ -94,7 +110,6 @@ async def on_message(message):
     blacklistArray = []
     postedMessage = message.content.lower().replace(" ", "")
     non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
-    print(str(postedMessage).translate(non_bmp_map))
     if any(c.isdigit() for c in postedMessage):
         try:
             postedMessage = postedMessage.replace("4", "a")
@@ -104,7 +119,11 @@ async def on_message(message):
             pass
             
     pmArray = ['.', '-', '/', ',', ';', "'", '"', '\\','{','}','|','[',']','=', '_']
+    pmOkArray= ['yes', 'respect']
 
+    for word in pmOkArray:
+        postedMessage = postedMessage.replace(word, "")
+        
     for symbol in pmArray:
         try:
             postedMessage = postedMessage.replace(symbol, "")
@@ -112,25 +131,31 @@ async def on_message(message):
             pass
         
     postedMessage = postedMessage.replace('@', "a")
+    postedMessage = postedMessage.replace("l", "i")
+    postedMessage = postedMessage.replace("L", "i")
+
+    
+    emojiIn = text_has_emoji(postedMessage)
+    if emojiIn == True:
+        for symbol in postedMessage:
+            if symbol in emoji.UNICODE_EMOJI:
+                postedMessage = postedMessage.replace(symbol, "")
+        
+    
     non = isEnglish(postedMessage)
     if non == False:
-        if message.author.id != "441029094247759872":
-            if message.author.id != "375173223526170625":
-                if message.author.id != "440947329101725696":
-                    await client.delete_message(message)
-                    await client.send_message(message.channel, test+": Please only speak english in the chat. Non-Ascii Characters are not allowed.")
-
+        if not message.author.server_permissions.administrator:
+            await client.delete_message(message)
+            await client.send_message(message.channel, test+": Please only speak english in the chat. Non-Ascii Characters are not allowed.")
 
     if str(message.author.id) not in open("muted.txt", "r").read():
         with open("blacklist.txt", mode='r') as blacklist:
             for word in blacklist:
                 word= word.rstrip()
-                if message.author.id != "441029094247759872":
-                    if message.author.id != "375173223526170625":
-                        if message.author.id != "440947329101725696":
-                            if word in postedMessage:
-                                await client.delete_message(message)
-                                await client.send_message(message.channel, test+": Please do not speak of this in the chat, take some time to review discords terms of service. https://discordapp.com/terms")
+                if not message.author.server_permissions.administrator:
+                    if word in postedMessage:
+                        await client.delete_message(message)
+                        await client.send_message(message.channel, test+": Please do not speak of this in the chat, take some time to review discords terms of service. https://discordapp.com/terms")
 
     if str(message.author.id) in open("muted.txt", "r").read():
         await client.delete_message(message)
@@ -439,4 +464,4 @@ async def on_message(message):
 
             '''
 
-client.run("[TOKEN]")
+client.run("[Token]")
