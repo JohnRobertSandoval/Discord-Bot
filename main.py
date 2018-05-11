@@ -1,5 +1,6 @@
-# -*- encoding: utf-8 -*-
-import discord,asyncio, time, string, random, datetime, os, re, threading, chardet, sys, emoji
+- encoding: utf-8 -*-
+import discord,asyncio, time, string, random, datetime, os, re, threading, chardet, sys, emoji, json, urllib.request, pytesseract
+from PIL import Image
 from discord.ext.commands import Bot
 from discord.ext import commands
 from threading import Timer
@@ -40,7 +41,7 @@ async def on_member_join(member):
 
 @client.event
 async def background_loop():
-    channelID = ["441203448323768320", "440951129052938240", "440951822639824907", "440951766616375306", "441498988445827074"]
+    channelID = ["441203448323768320", "440951129052938240", "440951822639824907", "440951766616375306"]
     for channel in channelID:
         channelName = client.get_channel(channel)
         await client.purge_from(channelName, limit=1000000)     
@@ -106,6 +107,8 @@ def isEnglish(s):
         
 @client.event
 async def on_message(message):
+
+    
     test = "<@"+message.author.id+">"
     blacklistArray = []
     postedMessage = message.content.lower().replace(" ", "")
@@ -121,14 +124,16 @@ async def on_message(message):
     pmArray = ['.', '-', '/', ',', ';', "'", '"', '\\','{','}','|','[',']','=', '_']
     pmOkArray= ['yes', 'respect']
 
-    for word in pmOkArray:
-        postedMessage = postedMessage.replace(word, "")
+    
         
     for symbol in pmArray:
         try:
             postedMessage = postedMessage.replace(symbol, "")
         except:
             pass
+
+    for word in pmOkArray:
+        postedMessage = postedMessage.replace(word, "")
         
     postedMessage = postedMessage.replace('@', "a")
     postedMessage = postedMessage.replace("l", "i")
@@ -138,8 +143,9 @@ async def on_message(message):
     emojiIn = text_has_emoji(postedMessage)
     if emojiIn == True:
         for symbol in postedMessage:
-            if symbol in emoji.UNICODE_EMOJI:
-                postedMessage = postedMessage.replace(symbol, "")
+            if symbol != "'" or symbol != ',' or symbol != '‘':
+                if symbol in emoji.UNICODE_EMOJI:
+                    postedMessage = postedMessage.replace(symbol, "")
         
     
     non = isEnglish(postedMessage)
@@ -147,6 +153,7 @@ async def on_message(message):
         if not message.author.server_permissions.administrator:
             await client.delete_message(message)
             await client.send_message(message.channel, test+": Please only speak english in the chat. Non-Ascii Characters are not allowed.")
+            print(str(message.content).translate(non_bmp_map))
 
     if str(message.author.id) not in open("muted.txt", "r").read():
         with open("blacklist.txt", mode='r') as blacklist:
@@ -156,6 +163,8 @@ async def on_message(message):
                     if word in postedMessage:
                         await client.delete_message(message)
                         await client.send_message(message.channel, test+": Please do not speak of this in the chat, take some time to review discords terms of service. https://discordapp.com/terms")
+                        print(str(message.content).translate(non_bmp_map))
+                        print(str(word).translate(non_bmp_map))
 
     if str(message.author.id) in open("muted.txt", "r").read():
         await client.delete_message(message)
@@ -327,7 +336,7 @@ async def on_message(message):
                 
 
     if message.content.upper().startswith('?UPGRADE'):
-        if message.author.server_permissions.administrator:
+        if message.author.server_permissions.administrator or "440949898695933962" in message.author.roles:
             try:
                 args = message.content.split(" ")
                 command1 = (" ".join(args[1:]))
